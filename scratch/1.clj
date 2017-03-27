@@ -53,7 +53,7 @@
                                  :red :white)}}
                 [:span {:style {:background-color
                                 (when (or (= i' (dec j)) (= i' j))
-                                  :green)}}
+                                  :green)}}xo
                  [:div {:style {:display :inline-block
                                 :text-align :center}}
                   [:div {:style {:font-size "10px"}} i']
@@ -76,3 +76,27 @@
                 (assoc (first indices)
                        :xs xs)
                 (rest inidices))))
+
+
+(defn insert-sort-steps [xs]
+  (let [n (count xs) 
+        ijs
+        (for [i (range (dec n))
+              j (range (inc i) 0 -1)]
+          {:i i :j j})
+        
+        next-xs
+        (fn [xs j]
+          (let [j' (- j 1)]
+            (if (< (nth xs j) (nth xs j'))
+              (swap-item xs j j')
+              xs)))]
+
+    ((fn aux [xs [{:keys [i j] :as ij} & ijs]]
+       (lazy-seq
+        (let [xs' (next-xs xs j)]
+          (concat [(assoc ij :xs xs)
+                   (assoc ij :xs xs')]
+                  (when (seq ijs)
+                    (aux xs' ijs))))))
+     xs ijs)))

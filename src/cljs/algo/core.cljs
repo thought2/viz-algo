@@ -31,28 +31,27 @@
            n1 (nth xs n2)
            n2 t)))
 
-(defn insert-sort-steps [xs]
-  (let [n (count xs) 
-        ijs
-        (for [i (range (dec n))
-              j (range (inc i) 0 -1)]
-          {:i i :j j})
-        
-        next-xs
-        (fn [xs j]
-          (let [j' (- j 1)]
-            (if (< (nth xs j) (nth xs j'))
-              (swap-item xs j j')
-              xs)))]
-
-    ((fn aux [xs [{:keys [i j] :as ij} & ijs]]
-       (lazy-seq
-        (let [xs' (next-xs xs j)]
-          (concat [(assoc ij :xs xs)
-                   (assoc ij :xs xs')]
-                  (when (seq ijs)
-                    (aux xs' ijs))))))
-     xs ijs)))
+(defn insertion-sort-steps [xs]
+  (let [n (count xs)
+        i (atom 0)
+        j (atom 1)
+        xs (atom xs)
+        steps (atom [])]
+    (doseq [i' (range (dec n))]
+      (reset! j (inc i'))
+      (while (do (swap! steps conj {:i @i
+                                    :j @j
+                                    :xs @xs})
+                 (and (>= @j 1)
+                      (< (@xs @j) (@xs (dec @j))))) 
+        (swap! xs swap-item  @j (dec @j))
+        (swap! j dec))
+      (reset! i i'))
+    
+    (concat [{:xs (-> @steps first :xs)}]
+            @steps
+            [{:xs (-> @steps last :xs)
+              :i (dec n)}])))
 
 
 (defn Button [{:keys [label event]}]
@@ -106,7 +105,7 @@
 
 (defn InsertSort []
   (let [state InsertSortState
-        steps (insert-sort-steps xs)
+        steps (insertion-sort-steps xs)
         [a! u!] (swap-shorthands state)
         pause #(a! :running false) 
         reset (fn [] (pause) (a! :pos 0))
@@ -137,8 +136,7 @@
     
     (fn []
       (let [{:keys [pos]} @state
-            {:keys [i j xs]} (nth steps pos)
-            j' (dec j)]
+            {:keys [i j xs]} (nth steps pos)]
         [:div {:style {:margin 10}}
          [:h1 "Insert Sort"]
          [:div
@@ -147,8 +145,8 @@
             (for [[i' x] (zip-range xs)]
               {:percent x
                :mode
-               (cond (<= j' i' j) :active
-                     (<= i' i) :sorted
+               (cond (and i j (<= (dec j) i' j)) :active
+                     (and i (<= i' i)) :sorted
                      :else :unsorted)})}]
           [:div
            (map (fn [[l e]]
