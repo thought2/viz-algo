@@ -1,7 +1,9 @@
 (def +version+ "0.1.0-SNAPSHOT")
-(def +name+ 'algo)
+(def +name+    'algo)
 
-(def both       '[[com.cemerick/url                     "0.1.1"]
+(def both       '[#_[thought2/boot2nix                    "0.1.0-SNAPSHOT"]
+                  [samestep/boot-refresh "0.1.0"]
+                  [com.cemerick/url                     "0.1.1"]
                   [ring-transit                         "0.1.6"] 
                   [org.clojure/test.check               "0.9.0"]
                   [org.clojure/math.combinatorics       "0.1.3"]
@@ -57,11 +59,13 @@
  :resource-paths #{"resources"}
  :dependencies (concat both back front))
 
-(require         '[pomjars.core                  :as pj] 
-                 '[pandeiro.boot-http            :refer [serve]]
-                 '[samestep.boot-refresh         :refer [refresh]] 
-                 '[clojure.repl                  :refer [doc]]
-                 '[clojure.pprint                :refer [pprint]])
+(require
+ #_ '[thought2.boot2nix :refer [boot2nix]]
+ '[pomjars.core                  :as pj] 
+ '[pandeiro.boot-http            :refer [serve]]
+ '[samestep.boot-refresh         :refer [refresh]] 
+ '[clojure.repl                  :refer [doc]]
+ '[clojure.pprint                :refer [pprint]])
 
 (require         '[net.cgrand.enlive-html        :as html]
                  ;;'[clj-http.client               :as client]
